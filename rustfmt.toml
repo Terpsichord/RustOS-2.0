@@ -1,0 +1,14 @@
+unstable_features = true
+
+fn_single_line = true
+group_imports = "One"
+hex_literal_case = "Lower"
+imports_granularity = "Crate"
+newline_style = "Unix"
+normalize_comments = true
+normalize_doc_attributes = true
+overflow_delimited_expr = true
+reorder_impl_items = true
+use_field_init_shorthand = true
+use_try_shorthand = true
+wrap_comments = true
