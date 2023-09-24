@@ -22,13 +22,13 @@ use x86_64::{
     VirtAddr,
 };
 
-pub mod acpi;
-pub mod apic;
-pub mod gdt;
-pub mod idt;
-pub mod mem;
-pub mod serial;
-pub mod writer;
+mod acpi;
+mod apic;
+mod gdt;
+mod idt;
+mod mem;
+mod serial;
+mod writer;
 
 pub fn init(boot_info: &'static mut BootInfo) {
     interrupts::disable();
