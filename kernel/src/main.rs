@@ -4,7 +4,6 @@
 use bootloader_api::{config::Mapping, entry_point, BootInfo, BootloaderConfig};
 use core::panic::PanicInfo;
 use kernel::hlt_loop;
-use x86_64::instructions::interrupts;
 
 pub static BOOTLOADER_CONFIG: BootloaderConfig = {
     let mut config = BootloaderConfig::new_default();
@@ -17,7 +16,9 @@ entry_point!(main, config = &BOOTLOADER_CONFIG);
 fn main(boot_info: &'static mut BootInfo) -> ! {
     kernel::init(boot_info);
 
-    interrupts::int3();
+    unsafe {
+        kernel::smp::init();
+    }
     log::info!("Hello, World!");
 
     hlt_loop();
