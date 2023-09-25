@@ -22,8 +22,7 @@ _print(format_args!($($arg)*));
 }
 
 /// Prints to the host through the serial interface, appending a newline.
-pub macro serial_println($fmt: expr, $($arg:tt)*) {
-    ($fmt:expr) => ($crate::serial_print!(concat!($fmt, "\n")));
-    ($fmt:expr, $($arg:tt)*) => ($crate::serial_print!(
-        concat!($fmt, "\n"), $($arg)*));
+pub macro serial_println {
+() => { serial_print!("\n"); },
+($($arg:tt)*) => { serial_print!("{}\n", format_args!($($arg)*)) },
 }

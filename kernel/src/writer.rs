@@ -20,8 +20,9 @@ pub fn init(framebuffer: &'static mut FrameBuffer) {
     log::set_max_level(log::LevelFilter::Trace);
 }
 
-pub macro println($fmt:expr, $($arg:tt)*) {
-print!(concat!($fmt, "\n"), $($arg)*)
+pub macro println {
+() => { print!("\n") },
+($($arg:tt)*) => { print!("{}\n", format_args!($($arg)*)) },
 }
 
 pub macro print($($arg:tt)*) {
