@@ -17,7 +17,7 @@ pub mod heap;
 pub static MANAGER: OnceCell<Mutex<MemoryManager<BootInfoFrameAllocator>>> = OnceCell::uninit();
 
 pub struct MemoryManager<A: FrameAllocator<Size4KiB>> {
-    offset_page_table: OffsetPageTable<'static>,
+    pub offset_page_table: OffsetPageTable<'static>,
     frame_allocator: A,
 }
 
