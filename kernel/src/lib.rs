@@ -29,6 +29,7 @@ mod idt;
 mod mem;
 mod serial;
 pub mod smp;
+pub mod task;
 mod writer;
 
 pub fn init(boot_info: &'static mut BootInfo) {
