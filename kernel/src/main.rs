@@ -3,10 +3,7 @@
 
 use bootloader_api::{config::Mapping, entry_point, BootInfo, BootloaderConfig};
 use core::panic::PanicInfo;
-use kernel::{
-    hlt_loop,
-    task::{executor::Executor, keyboard, Task},
-};
+use kernel::hlt_loop;
 use x86_64::instructions::interrupts;
 
 pub static BOOTLOADER_CONFIG: BootloaderConfig = {
@@ -18,13 +15,11 @@ pub static BOOTLOADER_CONFIG: BootloaderConfig = {
 entry_point!(main, config = &BOOTLOADER_CONFIG);
 
 fn main(boot_info: &'static mut BootInfo) -> ! {
-    kernel::init(boot_info);
+    let mut executor = kernel::init(boot_info);
 
     interrupts::int3();
     log::info!("Hello, World!");
 
-    let mut executor = Executor::new();
-    executor.spawn(Task::new(keyboard::print_keypresses()));
     executor.run();
 }
 
