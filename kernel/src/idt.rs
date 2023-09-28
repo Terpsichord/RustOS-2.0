@@ -1,7 +1,5 @@
-use crate::{hlt_loop, lapic, print};
+use crate::{hlt_loop, lapic, task::keyboard};
 use conquer_once::spin::Lazy;
-use pc_keyboard::{layouts::Uk105Key, DecodedKey, HandleControl, Keyboard, ScancodeSet1};
-use spin::Mutex;
 use x86_64::{
     instructions::{interrupts, port::PortReadOnly},
     registers::control::Cr2,
@@ -45,24 +43,10 @@ extern "x86-interrupt" fn breakpoint_handler(_stack_frame: InterruptStackFrame) 
 }
 
 extern "x86-interrupt" fn keyboard_handler(_stack_frame: InterruptStackFrame) {
-    static KEYBOARD: Mutex<Keyboard<Uk105Key, ScancodeSet1>> = Mutex::new(Keyboard::new(
-        ScancodeSet1::new(),
-        Uk105Key,
-        HandleControl::Ignore,
-    ));
-
     interrupts::without_interrupts(|| {
-        let mut keyboard = KEYBOARD.lock();
         let scancode = unsafe { PortReadOnly::new(0x60).read() };
+        keyboard::push_scancode(scancode);
 
-        if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {
-            if let Some(key) = keyboard.process_keyevent(key_event) {
-                match key {
-                    DecodedKey::Unicode(character) => print!("{}", character),
-                    DecodedKey::RawKey(key) => print!("{:?}", key),
-                }
-            }
-        }
         unsafe {
             lapic::get().end_of_interrupt();
         }
