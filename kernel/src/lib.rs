@@ -14,6 +14,7 @@ extern crate alloc;
 use crate::{
     apic::lapic,
     mem::{frame_allocator::BootInfoFrameAllocator, heap},
+    task::{keyboard, Executor},
 };
 use bootloader_api::BootInfo;
 pub use writer::{print, println};
@@ -32,7 +33,7 @@ pub mod smp;
 pub mod task;
 mod writer;
 
-pub fn init(boot_info: &'static mut BootInfo) {
+pub fn init(boot_info: &'static mut BootInfo) -> Executor {
     interrupts::disable();
 
     let phys_mem_offset = VirtAddr::new(
@@ -70,7 +71,12 @@ pub fn init(boot_info: &'static mut BootInfo) {
 
     interrupts::enable();
 
+    let (executor, mut spawner) = task::init_executor_and_spawner();
+    spawner.spawn(keyboard::print_keypresses());
+
     log::info!("initialised");
+
+    executor
 }
 
 pub fn hlt_loop() -> ! {
