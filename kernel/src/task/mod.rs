@@ -1,3 +1,5 @@
+pub use crate::task::executor::Executor;
+use crate::task::spawner::Spawner;
 use alloc::boxed::Box;
 use core::{
     future::Future,
@@ -8,7 +10,16 @@ use core::{
 
 pub mod executor;
 pub mod keyboard;
+pub mod spawner;
 mod waker;
+
+const QUEUE_CAPACITY: usize = 100;
+
+pub fn init_executor_and_spawner() -> (Executor, Spawner) {
+    let spawner = Spawner::new(QUEUE_CAPACITY);
+    let executor = Executor::new(spawner.clone(), QUEUE_CAPACITY);
+    (executor, spawner)
+}
 
 pub struct Task {
     id: TaskId,
@@ -28,7 +39,7 @@ impl Task {
     }
 }
 
-#[derive(Clone, Copy, Ord, PartialOrd, Eq, PartialEq, Debug)]
+#[derive(Clone, Copy, Eq, PartialEq, Debug, Hash)]
 struct TaskId(u64);
 
 impl TaskId {
