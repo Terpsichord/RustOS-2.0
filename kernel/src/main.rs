@@ -14,14 +14,14 @@ pub static BOOTLOADER_CONFIG: BootloaderConfig = {
 entry_point!(main, config = &BOOTLOADER_CONFIG);
 
 fn main(boot_info: &'static mut BootInfo) -> ! {
-    kernel::init(boot_info);
+    let mut executor = kernel::init(boot_info);
 
     unsafe {
         kernel::smp::init();
     }
     log::info!("Hello, World!");
 
-    hlt_loop();
+    executor.run();
 }
 
 #[panic_handler]
