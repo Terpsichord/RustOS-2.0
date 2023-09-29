@@ -18,7 +18,7 @@ pub static MANAGER: OnceCell<Mutex<MemoryManager<BootInfoFrameAllocator>>> = Onc
 
 pub struct MemoryManager<A: FrameAllocator<Size4KiB>> {
     pub offset_page_table: OffsetPageTable<'static>,
-    frame_allocator: A,
+    pub frame_allocator: A,
 }
 
 /// Initialise a new OffsetPageTable.
