@@ -1,7 +1,10 @@
 use crate::{apic::lapic, hlt_loop, println};
+use bootloader_api::info::MemoryRegion;
 use core::ptr;
-use raw_cpuid::CpuId;
-use x86_64::{structures::paging::PhysFrame, PhysAddr};
+use x86_64::{
+    structures::paging::{Page, PhysFrame},
+    PhysAddr, VirtAddr,
+};
 
 // pub unsafe fn example_read_and_write_to_msr() {
 //     let mut msr = Msr::new(0x1b);
@@ -36,22 +39,34 @@ use x86_64::{structures::paging::PhysFrame, PhysAddr};
 //     }
 // }
 
-const TRAMPOLINE_BASE: u64 = 0x10000000_0000;
+const TRAMPOLINE_BASE: u64 = 0x78000;
 
 pub unsafe fn init() {
     unsafe {
         let mut manager = crate::mem::MANAGER.try_get().unwrap().lock();
-        let offset = manager.offset_page_table.phys_offset().as_u64();
-        manager.create_mapping(PhysFrame::from_start_address_unchecked(PhysAddr::new(
-            TRAMPOLINE_BASE - offset,
-        )));
+        let region: &MemoryRegion = manager
+            .frame_allocator
+            .memory_regions
+            .iter()
+            .find(|region| region.start <= TRAMPOLINE_BASE && TRAMPOLINE_BASE <= region.end)
+            .unwrap();
+        println!("{:?}", region);
+        manager.create_mapping_with_page(
+            PhysFrame::containing_address(PhysAddr::new(TRAMPOLINE_BASE)),
+            Page::containing_address(VirtAddr::new(TRAMPOLINE_BASE)),
+        );
+        // manager.frame_allocator.memory_regions
+        // let offset = manager.offset_page_table.phys_offset().as_u64();
 
-        ptr::write(TRAMPOLINE_BASE as *mut _, ap_start);
-        let pointer_value = *(TRAMPOLINE_BASE as *const u8);
+        ptr::copy_nonoverlapping(
+            _ap_trampoline as *const u8,
+            TRAMPOLINE_BASE as *const u8,
+            4096,
+        );
         println!(
-            "ap_start: {:#06x}\n0x00002000: {:#06x}",
-            *(ap_start as *const u8),
-            pointer_value
+            "ap_start deref: {:#06x}\n0x78000: {:#06x}",
+            *(ap_start as *const u64),
+            *(TRAMPOLINE_BASE as *const u64),
         );
 
         let mut lapic = lapic::get();
@@ -61,7 +76,7 @@ pub unsafe fn init() {
 }
 
 extern "C" fn ap_start() -> ! {
-    let vendor_info = CpuId::new().get_vendor_info();
-    println!("hello from ap {:?}", vendor_info);
+    // let vendor_info = CpuId::new().get_vendor_info();
+    println!("hello from ap {:?}", 0 /* vendor_info */,);
     hlt_loop();
 }
