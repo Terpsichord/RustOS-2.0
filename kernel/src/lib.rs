@@ -37,6 +37,7 @@ mod memory;
 mod pci;
 mod serial;
 pub mod task;
+mod threads;
 mod writer;
 
 /// Initialise the kernel.
