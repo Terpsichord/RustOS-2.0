@@ -1,6 +1,6 @@
 // TODO: Re-write this as your own
 
-use crate::mem::frame_allocator::BootInfoFrameAllocator;
+use crate::{mem::frame_allocator::BootInfoFrameAllocator, serial::serial_println};
 use conquer_once::spin::OnceCell;
 use spin::mutex::Mutex;
 use x86_64::{
@@ -79,8 +79,12 @@ impl<A: FrameAllocator<Size4KiB>> MemoryManager<A> {
         let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
 
         let map_to_result = unsafe {
-            self.offset_page_table
-                .map_to(page, frame, flags, &mut self.frame_allocator)
+            serial_println!("mapping...");
+            let res = self
+                .offset_page_table
+                .map_to(page, frame, flags, &mut self.frame_allocator);
+            serial_println!("mapped");
+            res
         };
         map_to_result.expect("map_to failed").flush();
     }

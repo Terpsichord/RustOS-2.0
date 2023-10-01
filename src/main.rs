@@ -9,7 +9,9 @@ fn main() {
         .arg("-drive")
         .arg(format!("format=raw,file={uefi_path}"))
         .arg("-serial")
-        .arg("stdio");
+        .arg("stdio")
+        .arg("-smp")
+        .arg(num_cpus::get().to_string());
 
     println!("{uefi_path}");
     let exit_status = cmd.status().unwrap();

@@ -71,6 +71,8 @@ pub fn init(boot_info: &'static mut BootInfo) -> Executor {
 
     interrupts::enable();
 
+    smp::startup_aps(&acpi_tables);
+
     let (executor, mut spawner) = task::init_executor_and_spawner();
     spawner.spawn(keyboard::print_keypresses());
 

@@ -16,9 +16,6 @@ entry_point!(main, config = &BOOTLOADER_CONFIG);
 fn main(boot_info: &'static mut BootInfo) -> ! {
     let mut executor = kernel::init(boot_info);
 
-    unsafe {
-        kernel::smp::init();
-    }
     log::info!("Hello, World!");
 
     executor.run();
