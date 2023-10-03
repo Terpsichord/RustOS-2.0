@@ -13,7 +13,7 @@ extern crate alloc;
 
 use crate::{
     apic::lapic,
-    mem::{frame_allocator::BootInfoFrameAllocator, heap},
+    mem::{frame_allocator::PageFrameAllocator, heap},
     task::{keyboard, Executor},
 };
 use bootloader_api::BootInfo;
@@ -54,7 +54,7 @@ pub fn init(boot_info: &'static mut BootInfo) -> Executor {
 
     writer::init(frame_buffer);
 
-    let frame_allocator = unsafe { BootInfoFrameAllocator::init(&boot_info.memory_regions) };
+    let frame_allocator = unsafe { PageFrameAllocator::init(&boot_info.memory_regions) };
     unsafe { mem::init(phys_mem_offset, frame_allocator) }
 
     gdt::init();
