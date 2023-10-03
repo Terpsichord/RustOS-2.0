@@ -1,7 +1,7 @@
 use crate::{
     apic::{lapic, APIC_INTERRUPT_OFFSET},
     idt::InterruptVector,
-    mem::MANAGER,
+    mem,
 };
 use acpi::platform::interrupt::Apic;
 use alloc::alloc::Global;
@@ -13,11 +13,10 @@ const KEYBOARD_IRQ: u8 = 1;
 /// Initialises the I/O APIC from the address in `apic_info`.
 pub(super) fn init(apic_info: Apic<'_, Global>) {
     let phys_addr = PhysAddr::new(apic_info.io_apics[0].address as u64);
-    let mut manager = MANAGER.get().expect("couldn't get memory manager").lock();
 
     let mut ioapic;
     unsafe {
-        let page = manager.create_mapping(PhysFrame::containing_address(phys_addr));
+        let page = mem::create_mapping(PhysFrame::containing_address(phys_addr));
         let virt_addr = page.start_address();
 
         ioapic = IoApic::new(virt_addr.as_u64());
