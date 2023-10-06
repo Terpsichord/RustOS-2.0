@@ -17,12 +17,12 @@ pub fn _print(args: fmt::Arguments<'_>) {
 }
 
 /// Prints to the host through the serial interface.
-pub macro serial_print($($arg:tt)*) {
+pub macro print($($arg:tt)*) {
 _print(format_args!($($arg)*));
 }
 
 /// Prints to the host through the serial interface, appending a newline.
-pub macro serial_println {
-() => { serial_print!("\n"); },
-($($arg:tt)*) => { serial_print!("{}\n", format_args!($($arg)*)) },
+pub macro println {
+() => { print!("\n"); },
+($($arg:tt)*) => { print!("{}\n", format_args!($($arg)*)) },
 }

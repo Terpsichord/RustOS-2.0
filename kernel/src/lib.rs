@@ -2,8 +2,11 @@
 #![feature(abi_x86_interrupt)]
 #![feature(allocator_api)]
 #![feature(alloc_error_handler)]
-#![feature(never_type)]
+#![feature(custom_test_frameworks)]
 #![feature(decl_macro)]
+#![feature(never_type)]
+#![test_runner(crate::testing::test_runner)]
+#![reexport_test_harness_main = "test_main"]
 #![warn(clippy::all)]
 #![warn(rust_2018_idioms)]
 #![allow(clippy::new_without_default)]
@@ -17,6 +20,7 @@ use crate::{
     task::{keyboard, Executor},
 };
 use bootloader_api::BootInfo;
+use core::panic::PanicInfo;
 pub use writer::{print, println};
 use x86_64::{
     instructions::{hlt, interrupts},
@@ -30,7 +34,13 @@ mod idt;
 mod mem;
 mod serial;
 pub mod task;
+mod testing;
 mod writer;
+
+#[test_case]
+fn addition() {
+    assert_eq!(1 + 2, 3);
+}
 
 pub fn init(boot_info: &'static mut BootInfo) -> Executor {
     interrupts::disable();
@@ -82,4 +92,19 @@ pub fn hlt_loop() -> ! {
     loop {
         hlt();
     }
+}
+
+#[cfg(test)]
+#[no_mangle]
+pub extern "C" fn _start() -> ! {
+    test_main();
+
+    hlt_loop();
+}
+
+#[cfg(test)]
+#[panic_handler]
+fn panic(info: &PanicInfo) -> ! {
+    testing::test_panic_handler(info);
+    hlt_loop();
 }
