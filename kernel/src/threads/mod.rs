@@ -1,16 +1,22 @@
-use core::sync::atomic::{AtomicU64, Ordering};
+pub use context_switch::context_switch;
 
+pub mod context_switch;
+pub mod process;
+pub mod scheduler;
 pub mod thread;
-pub mod thread_switch;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct ThreadId(u64);
+#[repr(C)]
+pub struct Context {
+    r15: usize,
+    r14: usize,
+    r13: usize,
+    r12: usize,
 
-impl ThreadId {
-    pub fn new() -> Self {
-        static COUNTER: AtomicU64 = AtomicU64::new(0);
-        Self(COUNTER.fetch_add(1, Ordering::Relaxed))
-    }
+    rbx: usize,
+    rbp: usize,
 
-    pub fn as_u64(&self) -> u64 { self.0 }
+    rflags: usize,
+    rip: usize,
 }
+
+pub fn init() {}

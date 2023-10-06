@@ -1,4 +1,4 @@
-use crate::{hlt_loop, lapic, task::keyboard};
+use crate::{hlt_loop, lapic, task::keyboard, threads::scheduler};
 use conquer_once::spin::Lazy;
 use x86_64::{
     instructions::{interrupts, port::PortReadOnly},
@@ -10,16 +10,34 @@ use x86_64::{
 
 static IDT: Lazy<InterruptDescriptorTable> = Lazy::new(|| {
     let mut idt = InterruptDescriptorTable::new();
-    idt.breakpoint.set_handler_fn(breakpoint_handler);
-    idt.divide_error.set_handler_fn(divide_error_handler);
-    idt.double_fault.set_handler_fn(double_fault_handler);
-    idt.general_protection_fault
-        .set_handler_fn(general_protection_fault_handler);
-    idt.page_fault.set_handler_fn(page_fault_handler);
-    idt.invalid_tss.set_handler_fn(invalid_tss_handler);
 
-    idt[InterruptVector::Timer as usize].set_handler_fn(timer_handler);
-    idt[InterruptVector::Keyboard as usize].set_handler_fn(keyboard_handler);
+    unsafe {
+        idt.breakpoint
+            .set_handler_fn(breakpoint_handler)
+            .set_stack_index(IstIndex::General as u16);
+        idt.divide_error
+            .set_handler_fn(divide_error_handler)
+            .set_stack_index(IstIndex::General as u16);
+        idt.double_fault
+            .set_handler_fn(double_fault_handler)
+            .set_stack_index(IstIndex::General as u16);
+        idt.general_protection_fault
+            .set_handler_fn(general_protection_fault_handler)
+            .set_stack_index(IstIndex::General as u16);
+        idt.page_fault
+            .set_handler_fn(page_fault_handler)
+            .set_stack_index(IstIndex::General as u16);
+        idt.invalid_tss
+            .set_handler_fn(invalid_tss_handler)
+            .set_stack_index(IstIndex::General as u16);
+
+        idt[InterruptVector::Timer as usize]
+            .set_handler_fn(timer_handler)
+            .set_stack_index(IstIndex::Timer as u16);
+        idt[InterruptVector::Keyboard as usize]
+            .set_handler_fn(keyboard_handler)
+            .set_stack_index(IstIndex::General as u16);
+    }
 
     idt
 });
@@ -35,7 +53,20 @@ pub enum InterruptVector {
     Keyboard,
 }
 
+#[repr(u16)]
+enum IstIndex {
+    General = 0,
+    Timer,
+}
+
 pub fn init() { IDT.load(); }
+
+pub extern "x86-interrupt" fn timer_handler(stack_frame: InterruptStackFrame) {
+    interrupts::without_interrupts(|| unsafe {
+        lapic::get().end_of_interrupt();
+        scheduler::get().schedule(stack_frame.stack_pointer);
+    })
+}
 
 extern "x86-interrupt" fn breakpoint_handler(_stack_frame: InterruptStackFrame) {
     interrupts::without_interrupts(|| {
@@ -107,9 +138,3 @@ extern "x86-interrupt" fn invalid_tss_handler(stack_frame: InterruptStackFrame, 
 // SelectorErrorCode) {     log::error!("INVALID TSS\nSelector Error:
 // {:?}\n{:#?}", err_code, stack_frame);     hlt_loop();
 // }
-
-pub extern "x86-interrupt" fn timer_handler(_stack_frame: InterruptStackFrame) {
-    interrupts::without_interrupts(|| unsafe {
-        lapic::get().end_of_interrupt();
-    });
-}
