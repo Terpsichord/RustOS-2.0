@@ -9,11 +9,11 @@ pub(super) struct TaskWaker {
 }
 
 impl TaskWaker {
-    pub fn new(task_id: TaskId, task_queue: Arc<ArrayQueue<TaskId>>) -> Waker {
-        Waker::from(Arc::new(TaskWaker {
+    pub fn new(task_id: TaskId, task_queue: Arc<ArrayQueue<TaskId>>) -> Self {
+        Self {
             task_id,
             task_queue,
-        }))
+        }
     }
 }
 
@@ -23,4 +23,8 @@ impl Wake for TaskWaker {
     fn wake_by_ref(self: &Arc<Self>) {
         self.task_queue.push(self.task_id).expect("task queue full");
     }
+}
+
+impl From<TaskWaker> for Waker {
+    fn from(value: TaskWaker) -> Self { Waker::from(Arc::new(value)) }
 }

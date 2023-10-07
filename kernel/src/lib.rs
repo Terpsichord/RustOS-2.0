@@ -8,7 +8,11 @@
 #![test_runner(crate::testing::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 #![warn(clippy::all)]
+#![warn(clippy::pedantic)]
+#![warn(clippy::style)]
 #![warn(rust_2018_idioms)]
+#![allow(clippy::must_use_candidate)]
+#![allow(clippy::cast_possible_truncation)]
 #![allow(clippy::new_without_default)]
 #![deny(unsafe_op_in_unsafe_fn)]
 
@@ -16,11 +20,13 @@ extern crate alloc;
 
 use crate::{
     apic::lapic,
-    mem::{frame_allocator::PageFrameAllocator, heap},
+    mem::{frame_allocator, heap},
     task::{keyboard, Executor},
 };
 use bootloader_api::BootInfo;
+#[cfg(test)]
 use core::panic::PanicInfo;
+use frame_allocator::PageFrameAllocator;
 pub use writer::{print, println};
 use x86_64::{
     instructions::{hlt, interrupts},
@@ -42,6 +48,10 @@ fn addition() {
     assert_eq!(1 + 2, 3);
 }
 
+/// Initialise the kernel.
+///
+/// # Panics
+/// This function panics if the `boot_info` is missing any required fields.
 pub fn init(boot_info: &'static mut BootInfo) -> Executor {
     interrupts::disable();
 
@@ -76,7 +86,7 @@ pub fn init(boot_info: &'static mut BootInfo) -> Executor {
 
     let apic_info = acpi::get_apic_info(&acpi_tables);
 
-    apic::init(apic_info);
+    apic::init(&apic_info);
 
     interrupts::enable();
 
@@ -104,7 +114,7 @@ pub extern "C" fn _start() -> ! {
 
 #[cfg(test)]
 #[panic_handler]
-fn panic(info: &PanicInfo) -> ! {
+fn panic(info: &PanicInfo<'_>) -> ! {
     testing::test_panic_handler(info);
     hlt_loop();
 }

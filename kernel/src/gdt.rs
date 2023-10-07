@@ -1,4 +1,3 @@
-use core::ops::Deref;
 use spin::Lazy;
 use tss::TaskStateSegment;
 use x86_64::{
@@ -19,8 +18,7 @@ static TSS: Lazy<TaskStateSegment> = Lazy::new(|| {
         static mut STACK: [u8; STACK_SIZE] = [0; STACK_SIZE];
 
         let stack_start = VirtAddr::from_ptr(unsafe { &STACK });
-        let stack_end = stack_start + STACK_SIZE;
-        stack_end
+        stack_start + STACK_SIZE
     }; 7];
     tss
 });
@@ -48,7 +46,7 @@ struct Selectors {
 }
 
 pub fn init() {
-    let (gdt, selectors) = GDT.deref();
+    let (gdt, selectors) = &*GDT;
     gdt.load();
     unsafe {
         CS::set_reg(selectors.code_selector);

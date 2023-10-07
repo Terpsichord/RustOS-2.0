@@ -11,8 +11,8 @@ use x86_64::{structures::paging::PhysFrame, PhysAddr};
 const KEYBOARD_IRQ: u8 = 1;
 
 /// Initialises the I/O APIC from the address in `apic_info`.
-pub(super) fn init(apic_info: Apic<'_, Global>) {
-    let phys_addr = PhysAddr::new(apic_info.io_apics[0].address as u64);
+pub(super) fn init(apic_info: &Apic<'_, Global>) {
+    let phys_addr = PhysAddr::new(u64::from(apic_info.io_apics[0].address));
 
     let mut ioapic;
     unsafe {

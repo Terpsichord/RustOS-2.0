@@ -38,7 +38,7 @@ impl AcpiHandler for Handler {
 /// # Safety
 /// This function is unsafe because the caller must ensure that `rsdp_addr` is a
 /// valid RSDP address.
-pub unsafe fn init<'a>(phys_memory_offset: u64, rsdp_addr: u64) -> AcpiTables<Handler> {
+pub unsafe fn init(phys_memory_offset: u64, rsdp_addr: u64) -> AcpiTables<Handler> {
     let handler = Handler::new(phys_memory_offset);
     unsafe { AcpiTables::from_rsdp(handler, rsdp_addr as usize).unwrap() }
 }
