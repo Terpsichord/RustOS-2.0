@@ -5,6 +5,7 @@
 #![feature(custom_test_frameworks)]
 #![feature(decl_macro)]
 #![feature(never_type)]
+#![cfg_attr(test, no_main)]
 #![test_runner(crate::testing::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 #![warn(clippy::all)]
@@ -24,14 +25,14 @@ use crate::{
     task::{keyboard, Executor},
 };
 use bootloader_api::BootInfo;
-#[cfg(test)]
-use core::panic::PanicInfo;
 use frame_allocator::PageFrameAllocator;
 pub use writer::{print, println};
 use x86_64::{
     instructions::{hlt, interrupts},
     VirtAddr,
 };
+#[cfg(test)]
+use {bootloader_api::entry_point, core::panic::PanicInfo};
 
 mod acpi;
 mod apic;
@@ -40,13 +41,8 @@ mod idt;
 mod mem;
 mod serial;
 pub mod task;
-mod testing;
+pub mod testing;
 mod writer;
-
-#[test_case]
-fn addition() {
-    assert_eq!(1 + 2, 3);
-}
 
 /// Initialise the kernel.
 ///
@@ -105,8 +101,10 @@ pub fn hlt_loop() -> ! {
 }
 
 #[cfg(test)]
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
+entry_point!(main, config = &testing::BOOTLOADER_CONFIG);
+
+#[cfg(test)]
+pub fn main(_boot_info: &'static mut BootInfo) -> ! {
     test_main();
 
     hlt_loop();
@@ -114,7 +112,4 @@ pub extern "C" fn _start() -> ! {
 
 #[cfg(test)]
 #[panic_handler]
-fn panic(info: &PanicInfo<'_>) -> ! {
-    testing::test_panic_handler(info);
-    hlt_loop();
-}
+fn panic(info: &PanicInfo<'_>) -> ! { testing::test_panic_handler(info); }
