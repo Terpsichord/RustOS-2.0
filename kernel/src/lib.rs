@@ -17,6 +17,7 @@ use crate::{
     task::{keyboard, Executor},
 };
 use bootloader_api::BootInfo;
+use tinypci::PciClass;
 pub use writer::{print, println};
 use x86_64::{
     instructions::{hlt, interrupts},
@@ -28,6 +29,7 @@ mod apic;
 mod gdt;
 mod idt;
 mod mem;
+mod pci;
 mod serial;
 pub mod task;
 mod writer;
@@ -67,6 +69,13 @@ pub fn init(boot_info: &'static mut BootInfo) -> Executor {
     let apic_info = acpi::get_apic_info(&acpi_tables);
 
     apic::init(apic_info);
+
+    for device in tinypci::brute_force_scan()
+        .iter()
+        .filter(|dev| dev.class() == PciClass::MassStorage)
+    {
+        log::debug!("device: {:?}", device);
+    }
 
     interrupts::enable();
 
