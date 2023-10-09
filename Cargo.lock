@@ -598,6 +598,7 @@ name = "kernel"
 version = "0.1.0"
 dependencies = [
  "acpi",
+ "anyhow",
  "bootloader-x86_64-common",
  "bootloader_api",
  "conquer-once 0.4.0",

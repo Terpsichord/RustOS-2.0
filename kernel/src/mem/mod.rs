@@ -1,8 +1,8 @@
 // TODO: Re-write this as your own
 
 use crate::mem::frame_allocator::PageFrameAllocator;
+use anyhow::Result;
 use conquer_once::spin::OnceCell;
-use core::ops::DerefMut;
 use spin::{mutex::Mutex, MutexGuard};
 use x86_64::{
     registers::control::Cr3,
@@ -32,7 +32,7 @@ fn memory_manager() -> MutexGuard<'static, MemoryManager<PageFrameAllocator>> {
     guard
 }
 
-/// Initialise a new OffsetPageTable.
+/// Initialise a new `OffsetPageTable`.
 ///
 /// # Safety
 /// This function is unsafe because the caller must guarantee that the
@@ -65,7 +65,7 @@ pub unsafe fn create_mapping(frame: PhysFrame) -> Page {
 pub unsafe fn create_mapping_with_page(frame: PhysFrame, page: Page) {
     let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
     let mut guard = memory_manager();
-    let manager = guard.deref_mut();
+    let manager = &mut *guard;
 
     let map_to_result = unsafe {
         manager

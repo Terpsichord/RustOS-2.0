@@ -28,7 +28,7 @@ impl Stream for ScancodeStream {
             return Poll::Ready(Some(scancode));
         }
 
-        WAKER.register(&cx.waker());
+        WAKER.register(cx.waker());
         match SCANCODE_QUEUE.pop() {
             Some(scancode) => {
                 WAKER.take();
@@ -40,7 +40,7 @@ impl Stream for ScancodeStream {
 }
 
 pub fn push_scancode(scancode: u8) {
-    if let Ok(_) = SCANCODE_QUEUE.push(scancode) {
+    if SCANCODE_QUEUE.push(scancode).is_ok() {
         WAKER.wake();
     } else {
         log::warn!("scancode queue full; dropping keyboard input");

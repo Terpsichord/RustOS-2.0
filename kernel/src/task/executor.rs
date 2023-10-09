@@ -23,9 +23,10 @@ impl Executor {
 
     fn spawn(&mut self, task: Task) {
         let task_id = task.id;
-        if self.tasks.insert(task_id, task).is_some() {
-            panic!("task with same ID already exists");
-        }
+        assert!(
+            self.tasks.insert(task_id, task).is_none(),
+            "task with same ID already exists"
+        );
         self.task_queue.push(task_id).expect("task queue full");
     }
 
@@ -42,10 +43,9 @@ impl Executor {
     fn run_queued_tasks(&mut self) {
         while let Some(task_id) = self.task_queue.pop() {
             if let Some(task) = self.tasks.get_mut(&task_id) {
-                let waker = self
-                    .waker_cache
-                    .entry(task_id)
-                    .or_insert_with(|| TaskWaker::new(task_id, Arc::clone(&self.task_queue)));
+                let waker = self.waker_cache.entry(task_id).or_insert_with(|| {
+                    TaskWaker::new(task_id, Arc::clone(&self.task_queue)).into()
+                });
 
                 let mut context = Context::from_waker(waker);
 

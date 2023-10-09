@@ -39,7 +39,7 @@ pub fn init() { IDT.load(); }
 extern "x86-interrupt" fn breakpoint_handler(_stack_frame: InterruptStackFrame) {
     interrupts::without_interrupts(|| {
         log::info!("BREAKPOINT");
-    })
+    });
 }
 
 extern "x86-interrupt" fn keyboard_handler(_stack_frame: InterruptStackFrame) {
@@ -50,7 +50,7 @@ extern "x86-interrupt" fn keyboard_handler(_stack_frame: InterruptStackFrame) {
         unsafe {
             lapic::get().end_of_interrupt();
         }
-    })
+    });
 }
 
 extern "x86-interrupt" fn divide_error_handler(stack_frame: InterruptStackFrame) {
@@ -96,5 +96,5 @@ extern "x86-interrupt" fn page_fault_handler(
 pub extern "x86-interrupt" fn timer_handler(_stack_frame: InterruptStackFrame) {
     interrupts::without_interrupts(|| unsafe {
         lapic::get().end_of_interrupt();
-    })
+    });
 }

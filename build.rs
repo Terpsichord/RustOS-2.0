@@ -3,7 +3,7 @@ use std::{env, path::PathBuf};
 
 fn main() {
     let kernel = PathBuf::from(env::var("CARGO_BIN_FILE_KERNEL").unwrap());
-    let disk_builder = DiskImageBuilder::new(PathBuf::from(kernel));
+    let disk_builder = DiskImageBuilder::new(kernel);
 
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
     let uefi_path = out_dir.join("blog_os-uefi.img");

@@ -5,7 +5,11 @@
 #![feature(never_type)]
 #![feature(decl_macro)]
 #![warn(clippy::all)]
+#![warn(clippy::pedantic)]
+#![warn(clippy::style)]
 #![warn(rust_2018_idioms)]
+#![allow(clippy::must_use_candidate)]
+#![allow(clippy::cast_possible_truncation)]
 #![allow(clippy::new_without_default)]
 #![deny(unsafe_op_in_unsafe_fn)]
 
@@ -34,6 +38,10 @@ mod serial;
 pub mod task;
 mod writer;
 
+/// Initialise the kernel.
+///
+/// # Panics
+/// This function panics if the `boot_info` is missing any required fields.
 pub fn init(boot_info: &'static mut BootInfo) -> (Executor, Spawner) {
     interrupts::disable();
 
@@ -68,7 +76,7 @@ pub fn init(boot_info: &'static mut BootInfo) -> (Executor, Spawner) {
 
     let apic_info = acpi::get_apic_info(&acpi_tables);
 
-    apic::init(apic_info);
+    apic::init(&apic_info);
 
     for device in tinypci::brute_force_scan()
         .iter()

@@ -5,8 +5,9 @@ use x86_64::{
     PhysAddr,
 };
 
-/// A FrameAllocator that returns usable frames from the bootloader's memory
+/// A `FrameAllocator` that returns usable frames from the bootloader's memory
 /// map.
+#[allow(clippy::module_name_repetitions)]
 pub struct PageFrameAllocator {
     memory_regions: &'static MemoryRegions,
     next: usize,
@@ -15,7 +16,7 @@ pub struct PageFrameAllocator {
 unsafe impl Send for PageFrameAllocator {}
 
 impl PageFrameAllocator {
-    /// Create a FrameAllocator from the passed memory map.
+    /// Create a `FrameAllocator` from the passed memory map.
     ///
     /// This function is unsafe because the caller must guarantee that the
     /// passed memory map is valid. The main requirement is that all frames
