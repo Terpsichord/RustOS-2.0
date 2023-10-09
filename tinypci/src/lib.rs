@@ -137,10 +137,8 @@ fn check_device(bus: u8, device: u8) -> Option<PciDeviceInfo> {
     if (header_type & 0x80) != 0 {
         // It is a multi-function device, so check remaining functions
         for function in 0u8..8 {
-            if get_ids(bus, device, function).1 != 0xffff {
-                if check_function(bus, device, function) {
-                    supported_fns[function as usize] = true;
-                }
+            if get_ids(bus, device, function).1 != 0xffff && check_function(bus, device, function) {
+                supported_fns[function as usize] = true;
             }
         }
     }
@@ -177,8 +175,7 @@ unsafe fn pci_config_read(bus: u8, device: u8, func: u8, offset: u8) -> u32 {
     let func = func as u32;
     let offset = offset as u32;
     // construct address param
-    let address =
-        ((bus << 16) | (device << 11) | (func << 8) | (offset & 0xfc) | 0x80000000) as u32;
+    let address = (bus << 16) | (device << 11) | (func << 8) | (offset & 0xfc) | 0x80000000;
 
     // write address
     unsafe {
@@ -196,8 +193,7 @@ unsafe fn pci_config_write(bus: u8, device: u8, func: u8, offset: u8, value: u32
     let func = func as u32;
     let offset = offset as u32;
     // construct address param
-    let address =
-        ((bus << 16) | (device << 11) | (func << 8) | (offset & 0xfc) | 0x80000000) as u32;
+    let address = (bus << 16) | (device << 11) | (func << 8) | (offset & 0xfc) | 0x80000000;
 
     // write address
     unsafe {
