@@ -8,6 +8,12 @@ fn main() {
         .arg(ovmf_prebuilt::ovmf_pure_efi())
         .arg("-drive")
         .arg(format!("format=raw,file={uefi_path}"))
+        .arg("-drive")
+        .arg("format=raw,file=harddisk.img,id=harddisk,if=none")
+        .arg("-device")
+        .arg("ahci,id=ahci")
+        .arg("-device")
+        .arg("ide-hd,bus=ahci.0,drive=harddisk")
         .arg("-serial")
         .arg("stdio");
 

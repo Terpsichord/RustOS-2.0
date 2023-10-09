@@ -3,8 +3,7 @@
 
 use bootloader_api::{config::Mapping, entry_point, BootInfo, BootloaderConfig};
 use core::panic::PanicInfo;
-use kernel::hlt_loop;
-use x86_64::instructions::interrupts;
+use kernel::{hlt_loop, println};
 
 pub static BOOTLOADER_CONFIG: BootloaderConfig = {
     let mut config = BootloaderConfig::new_default();
@@ -12,14 +11,12 @@ pub static BOOTLOADER_CONFIG: BootloaderConfig = {
     config
 };
 
-entry_point!(main, config = &BOOTLOADER_CONFIG);
+entry_point!(entry, config = &BOOTLOADER_CONFIG);
 
-fn main(boot_info: &'static mut BootInfo) -> ! {
-    let mut executor = kernel::init(boot_info);
+fn entry(boot_info: &'static mut BootInfo) -> ! {
+    let (mut executor, mut spawner) = kernel::init(boot_info);
 
-    interrupts::int3();
-    log::info!("Hello, World!");
-
+    spawner.spawn(main());
     executor.run();
 }
 
@@ -28,3 +25,5 @@ fn panic(info: &PanicInfo) -> ! {
     log::error!("{info}");
     hlt_loop();
 }
+
+async fn main() { println!("Hello, World!") }

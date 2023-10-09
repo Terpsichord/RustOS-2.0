@@ -14,7 +14,7 @@ extern crate alloc;
 use crate::{
     apic::lapic,
     mem::{frame_allocator::PageFrameAllocator, heap},
-    task::{keyboard, Executor},
+    task::{keyboard, spawner::Spawner, Executor},
 };
 use bootloader_api::BootInfo;
 use tinypci::PciClass;
@@ -34,7 +34,7 @@ mod serial;
 pub mod task;
 mod writer;
 
-pub fn init(boot_info: &'static mut BootInfo) -> Executor {
+pub fn init(boot_info: &'static mut BootInfo) -> (Executor, Spawner) {
     interrupts::disable();
 
     let phys_mem_offset = VirtAddr::new(
@@ -74,7 +74,7 @@ pub fn init(boot_info: &'static mut BootInfo) -> Executor {
         .iter()
         .filter(|dev| dev.class() == PciClass::MassStorage)
     {
-        log::debug!("device: {:?}", device);
+        log::debug!("{:?}", device);
     }
 
     interrupts::enable();
@@ -84,7 +84,7 @@ pub fn init(boot_info: &'static mut BootInfo) -> Executor {
 
     log::info!("initialised");
 
-    executor
+    (executor, spawner)
 }
 
 pub fn hlt_loop() -> ! {
