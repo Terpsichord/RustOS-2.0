@@ -21,6 +21,7 @@ use crate::{
     task::{keyboard, spawner::Spawner, Executor},
 };
 use bootloader_api::BootInfo;
+use cmos_rtc::ReadRTC;
 use tinypci::PciClass;
 pub use writer::{print, println};
 use x86_64::{
@@ -91,6 +92,10 @@ pub fn init(boot_info: &'static mut BootInfo) -> (Executor, Spawner) {
     spawner.spawn(keyboard::print_keypresses());
 
     log::info!("initialised");
+
+    let mut cmos = ReadRTC::new(0, 0);
+
+    log::debug!("current time: {:?}", cmos.read());
 
     (executor, spawner)
 }

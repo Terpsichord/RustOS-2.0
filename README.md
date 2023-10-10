@@ -14,11 +14,11 @@ A toy kernel written in Rust.
 
 - [ ] Rewrite heap allocator
 - [ ] Rewrite PCI module
-- [ ] Network stack
+- [ ] Rewrite RTC
 - [ ] SMP
 - [ ] Preemptive multitasking with threads
-- [ ] RTC and CMOS support
 - [ ] Device manager and drivers
+- [ ] Network stack
 - [ ] Ability to display images
 - [ ] IPC
 - [ ] Userland

@@ -254,6 +254,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
+name = "cmos-rtc"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fdd109d8ba108f7420ce21f75e2278589ef91ef2ebd5641032bec8ffd5b8b572"
+dependencies = [
+ "x86_64",
+]
+
+[[package]]
 name = "concurrent-queue"
 version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -601,6 +610,7 @@ dependencies = [
  "anyhow",
  "bootloader-x86_64-common",
  "bootloader_api",
+ "cmos-rtc",
  "conquer-once 0.4.0",
  "crossbeam-queue",
  "embedded-graphics",
