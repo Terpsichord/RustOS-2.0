@@ -21,8 +21,8 @@ use crate::{
     task::{keyboard, spawner::Spawner, Executor},
 };
 use bootloader_api::BootInfo;
+use tinypci::{PciClass, PciDeviceInfo};
 use cmos_rtc::ReadRTC;
-use tinypci::PciClass;
 pub use writer::{print, println};
 use x86_64::{
     instructions::{hlt, interrupts},
@@ -31,6 +31,8 @@ use x86_64::{
 
 mod acpi;
 mod apic;
+mod device;
+mod drivers;
 mod gdt;
 mod idt;
 mod memory;
@@ -79,12 +81,16 @@ pub fn init(boot_info: &'static mut BootInfo) -> (Executor, Spawner) {
 
     apic::init(&apic_info);
 
-    for device in tinypci::brute_force_scan()
+    let pci_devices: alloc::vec::Vec<PciDeviceInfo> = tinypci::brute_force_scan();
+
+    for device in pci_devices
         .iter()
-        .filter(|dev| dev.class() == PciClass::MassStorage)
+        .filter(|dev| dev.class() == PciClass::MassStorage || dev.class() == PciClass::Display)
     {
-        log::debug!("{:?}", device);
+        log::debug!("{:x?}", device);
     }
+
+    drivers::ahci::init(&pci_devices);
 
     interrupts::enable();
 

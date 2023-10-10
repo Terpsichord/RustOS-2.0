@@ -1,6 +1,6 @@
 /// The major class specification for a PCI device.
 #[allow(dead_code)]
-#[derive(Debug, Clone, Copy, PartialEq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(C)]
 pub enum PciClass {
