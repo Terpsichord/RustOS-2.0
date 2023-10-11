@@ -1,9 +1,6 @@
 use anyhow::{anyhow, Result};
 use hashbrown::HashMap;
-
 use tinypci::{PciClass, PciDeviceInfo};
-
-;
 
 pub trait Driver {
     fn class(&self) -> PciClass;
@@ -19,7 +16,6 @@ impl Manager {
             .insert(driver.class(), driver)
             .expect("driver for class already exists");
     }
-
 
     fn find_driver(&self, device: PciDeviceInfo) -> Result<&'static dyn Driver> {
         self.drivers
