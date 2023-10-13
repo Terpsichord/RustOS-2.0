@@ -6,7 +6,10 @@ use core::{
 use crossbeam_queue::ArrayQueue;
 use futures_core::Stream;
 use futures_util::{task::AtomicWaker, StreamExt};
-use pc_keyboard::{layouts::Uk105Key, DecodedKey, HandleControl, Keyboard, ScancodeSet1};
+use pc_keyboard::{
+    layouts::Uk105Key, DecodedKey, HandleControl, Keyboard, KeyboardLayout, ScancodeSet,
+    ScancodeSet1,
+};
 use spin::Lazy;
 
 static SCANCODE_QUEUE: Lazy<ArrayQueue<u8>> = Lazy::new(|| ArrayQueue::new(100));
@@ -18,6 +21,20 @@ pub struct ScancodeStream {
 
 impl ScancodeStream {
     pub fn new() -> Self { Self { _priv: () } }
+
+    async fn next_char<S, L>(&mut self, keyboard: &mut Keyboard<L, S>) -> Option<char>
+    where
+        S: ScancodeSet,
+        L: KeyboardLayout,
+    {
+        let scancode = self.next().await?;
+        let key_event = keyboard.add_byte(scancode).ok().flatten()?;
+        let key = keyboard.process_keyevent(key_event)?;
+        match key {
+            DecodedKey::Unicode(c) => Some(c),
+            _ => None,
+        }
+    }
 }
 
 impl Stream for ScancodeStream {
@@ -48,17 +65,18 @@ pub fn push_scancode(scancode: u8) {
 }
 
 pub async fn print_keypresses() {
-    let mut keyboard = Keyboard::new(ScancodeSet1::new(), Uk105Key, HandleControl::Ignore);
+    let mut keyboard = Keyboard::new(
+        ScancodeSet1::new(),
+        Uk105Key,
+        HandleControl::MapLettersToUnicode,
+    );
     let mut scancodes = ScancodeStream::new();
 
-    while let Some(scancode) = scancodes.next().await {
-        if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {
-            if let Some(key) = keyboard.process_keyevent(key_event) {
-                match key {
-                    DecodedKey::Unicode(character) => print!("{}", character),
-                    DecodedKey::RawKey(key) => print!("{:?}", key),
-                }
-            }
-        }
+    loop {
+        let Some(character) = scancodes.next_char(&mut keyboard).await else {
+            continue;
+        };
+
+        print!("{}", character);
     }
 }
