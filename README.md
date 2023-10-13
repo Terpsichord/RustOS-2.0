@@ -4,11 +4,15 @@ A toy kernel written in Rust.
 
 ### Features
 
-- Pure Rust kernel with internal safety guarantees
-- Virtual memory management
-- APIC interrupt handling
-- Cooperative multitasking with an async executor
-- Text-mode VGA output
+&nbsp;&nbsp;🦀 Pure Rust kernel with internal safety guarantees
+
+&nbsp;&nbsp;🧮 Virtual memory management
+
+&nbsp;&nbsp;⚙️ APIC interrupt handling
+
+&nbsp;&nbsp;🔄 Cooperative multitasking with an async executor
+
+&nbsp;&nbsp;🖥️ Text-mode VGA output
 
 ### Todo
 
