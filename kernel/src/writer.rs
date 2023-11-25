@@ -1,3 +1,4 @@
+use crate::serial;
 use bootloader_api::info::FrameBuffer;
 use bootloader_x86_64_common::framebuffer::FrameBufferWriter;
 use conquer_once::spin::OnceCell;
@@ -43,6 +44,7 @@ impl log::Log for Logger {
     fn log(&self, record: &Record<'_>) {
         let mut writer = WRITER.try_get().expect("writer uninitialised").lock();
         writeln!(writer, "{:5}: {}", record.level(), record.args()).unwrap();
+        serial::println!("{:5}: {}", record.level(), record.args());
     }
 
     fn flush(&self) {}

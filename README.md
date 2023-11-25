@@ -30,3 +30,4 @@ A toy kernel written in Rust.
 - [ ] Write custom `std` target
 - [ ] Shell
 - [ ] Transition to hybrid/microkernel?
+- [ ] Support other architectures? (e.g. aarch64)

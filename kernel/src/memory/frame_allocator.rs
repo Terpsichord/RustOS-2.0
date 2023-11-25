@@ -1,4 +1,4 @@
-use crate::mem::PAGE_SIZE;
+use crate::memory::PAGE_SIZE;
 use bootloader_api::info::{MemoryRegionKind, MemoryRegions};
 use x86_64::{
     structures::paging::{FrameAllocator, PhysFrame, Size4KiB},

@@ -1,4 +1,4 @@
-use crate::mem;
+use crate::memory;
 use linked_list_allocator::LockedHeap;
 use x86_64::{
     structures::paging::{mapper::MapToError, Page, Size4KiB},
@@ -26,7 +26,7 @@ pub fn init() -> Result<(), MapToError<Size4KiB>> {
     };
 
     unsafe {
-        mem::allocate_range(page_range)?;
+        memory::manager().allocate_range(page_range)?;
 
         ALLOCATOR.lock().init(HEAP_START as *mut u8, HEAP_SIZE);
     }

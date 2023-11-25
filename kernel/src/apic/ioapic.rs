@@ -1,7 +1,7 @@
 use crate::{
     apic::{lapic, APIC_INTERRUPT_OFFSET},
     idt::InterruptVector,
-    mem,
+    memory,
 };
 use acpi::platform::interrupt::Apic;
 use alloc::alloc::Global;
@@ -16,7 +16,7 @@ pub(super) fn init(apic_info: &Apic<'_, Global>) {
 
     let mut ioapic;
     unsafe {
-        let page = mem::create_mapping(PhysFrame::containing_address(phys_addr));
+        let page = memory::manager().create_mapping(PhysFrame::containing_address(phys_addr));
         let virt_addr = page.start_address();
 
         ioapic = IoApic::new(virt_addr.as_u64());

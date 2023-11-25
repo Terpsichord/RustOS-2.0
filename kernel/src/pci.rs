@@ -3,7 +3,7 @@
 // use alloc::{vec, vec::Vec};
 // use anyhow::{bail, Result};
 // use bitfield::{bitfield_bitrange, bitfield_debug, bitfield_fields};
-// use core::{fmt, fmt::Formatter, mem};
+// use core::{fmt, fmt::Formatter, memory};
 // use num_derive::{FromPrimitive, ToPrimitive};
 // use num_traits::{AsPrimitive, FromPrimitive, ToPrimitive};
 // use x86_64::instructions::port::{Port, PortWriteOnly};

@@ -1,4 +1,4 @@
-use crate::{idt::InterruptVector, mem};
+use crate::{idt::InterruptVector, memory};
 use conquer_once::spin::OnceCell;
 use spin::{Mutex, MutexGuard};
 use x2apic::lapic::{xapic_base, LocalApic, LocalApicBuilder};
@@ -9,7 +9,8 @@ pub static LAPIC: OnceCell<Mutex<LocalApic>> = OnceCell::uninit();
 /// Initialise the Local APIC into `LAPIC`.
 pub(super) fn init() {
     let phys_addr = PhysAddr::new(unsafe { xapic_base() });
-    let page = unsafe { mem::create_mapping(PhysFrame::containing_address(phys_addr)) };
+    let page =
+        unsafe { memory::manager().create_mapping(PhysFrame::containing_address(phys_addr)) };
     let virt_addr = page.start_address();
 
     let mut local_apic = LocalApicBuilder::new()

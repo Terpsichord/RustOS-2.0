@@ -3,6 +3,7 @@ use std::{env, path::PathBuf};
 
 fn main() {
     let kernel = PathBuf::from(env::var("CARGO_BIN_FILE_KERNEL").unwrap());
+    println!("cargo:rustc-env=KERNEL_PATH={}", kernel.display());
     let disk_builder = DiskImageBuilder::new(kernel);
 
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
