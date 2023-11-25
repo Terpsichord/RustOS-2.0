@@ -1,4 +1,4 @@
-use crate::{hlt_loop, lapic, task::keyboard};
+use crate::{gdt::IstIndex, hlt_loop, lapic, task::keyboard};
 use conquer_once::spin::Lazy;
 use x86_64::{
     instructions::{interrupts, port::PortReadOnly},
@@ -6,13 +6,18 @@ use x86_64::{
     structures::idt::{
         InterruptDescriptorTable, InterruptStackFrame, PageFaultErrorCode, SelectorErrorCode,
     },
+    PrivilegeLevel,
 };
 
 static IDT: Lazy<InterruptDescriptorTable> = Lazy::new(|| {
     let mut idt = InterruptDescriptorTable::new();
     idt.breakpoint.set_handler_fn(breakpoint_handler);
     idt.divide_error.set_handler_fn(divide_error_handler);
-    idt.double_fault.set_handler_fn(double_fault_handler);
+    unsafe {
+        idt.double_fault
+            .set_handler_fn(double_fault_handler)
+            .set_stack_index(IstIndex::DoubleFault as u16);
+    }
     idt.general_protection_fault
         .set_handler_fn(general_protection_fault_handler);
     idt.page_fault.set_handler_fn(page_fault_handler);
@@ -20,9 +25,21 @@ static IDT: Lazy<InterruptDescriptorTable> = Lazy::new(|| {
 
     idt[InterruptVector::Timer as usize].set_handler_fn(timer_handler);
     idt[InterruptVector::Keyboard as usize].set_handler_fn(keyboard_handler);
+    idt[0x80]
+        .set_handler_fn(syscall_handler)
+        .set_privilege_level(PrivilegeLevel::Ring3);
 
     idt
 });
+
+extern "x86-interrupt" fn syscall_handler(_stack_frame: InterruptStackFrame) {
+    let rax: u64;
+    unsafe {
+        core::arch::asm!("nop", out("rax") rax);
+    }
+    log::trace!("syscall (int 0x80h)");
+    log::trace!("rax: {rax}");
+}
 
 const INTERRUPT_VECTOR_OFFSET: u8 = 0x30;
 

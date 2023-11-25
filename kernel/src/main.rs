@@ -26,4 +26,10 @@ fn panic(info: &PanicInfo) -> ! {
     hlt_loop();
 }
 
-async fn main() { println!("Hello, World!") }
+async fn main() {
+    println!("Hello, World!");
+    let _num = 5;
+    // unsafe {
+    //     core::arch::asm!("syscall", in("rax") num);
+    // }
+}

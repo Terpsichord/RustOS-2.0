@@ -4,6 +4,7 @@
 #![feature(alloc_error_handler)]
 #![feature(never_type)]
 #![feature(decl_macro)]
+#![feature(naked_functions)]
 #![warn(clippy::all)]
 #![warn(clippy::pedantic)]
 #![warn(clippy::style)]
@@ -36,7 +37,9 @@ mod idt;
 mod memory;
 mod pci;
 mod serial;
+mod syscall;
 pub mod task;
+mod user;
 mod writer;
 
 /// Initialise the kernel.
@@ -85,6 +88,8 @@ pub fn init(boot_info: &'static mut BootInfo) -> (Executor, Spawner) {
     {
         log::debug!("{:?}", device);
     }
+
+    syscall::init();
 
     interrupts::enable();
 
