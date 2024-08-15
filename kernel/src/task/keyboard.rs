@@ -21,20 +21,6 @@ pub struct ScancodeStream {
 
 impl ScancodeStream {
     pub fn new() -> Self { Self { _priv: () } }
-
-    async fn next_char<S, L>(&mut self, keyboard: &mut Keyboard<L, S>) -> Option<char>
-    where
-        S: ScancodeSet,
-        L: KeyboardLayout,
-    {
-        let scancode = self.next().await?;
-        let key_event = keyboard.add_byte(scancode).ok().flatten()?;
-        let key = keyboard.process_keyevent(key_event)?;
-        match key {
-            DecodedKey::Unicode(c) => Some(c),
-            DecodedKey::RawKey(_) => None,
-        }
-    }
 }
 
 impl Stream for ScancodeStream {
@@ -64,19 +50,76 @@ pub fn push_scancode(scancode: u8) {
     }
 }
 
-pub async fn print_keypresses() {
-    let mut keyboard = Keyboard::new(
-        ScancodeSet1::new(),
-        Uk105Key,
-        HandleControl::MapLettersToUnicode,
-    );
+fn print_key(key: DecodedKey) {
+    match key {
+        DecodedKey::Unicode(character) => print!("{}", character),
+        DecodedKey::RawKey(key) => print!("{:?}", key),
+    }
+}
+
+pub async fn print_keypresses() { process_keypresses(print_key).await }
+
+pub async fn process_keypresses(mut process_key: impl FnMut(DecodedKey)) {
+    let mut keyboard = Keyboard::new(ScancodeSet1::new(), Uk105Key, HandleControl::Ignore);
     let mut scancodes = ScancodeStream::new();
 
-    loop {
-        let Some(character) = scancodes.next_char(&mut keyboard).await else {
-            continue;
-        };
-
-        print!("{}", character);
+    while let Some(scancode) = scancodes.next().await {
+        if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {
+            if let Some(key) = keyboard.process_keyevent(key_event) {
+                process_key(key)
+            }
+        }
     }
+}
+
+/// A (not-yet) ANSI-compatible terminal
+struct Terminal<S: ScancodeSet, L: KeyboardLayout> {
+    keyboard: Keyboard<L, S>,
+    escape_parser: EscapeParser,
+}
+
+#[derive(Default)]
+enum EscapeParser {
+    #[default]
+    Start,
+    Escape,
+    Control,
+}
+
+impl<S: ScancodeSet, L: KeyboardLayout> Terminal<S, L> {
+    fn new(scancode_set: S, layout: L) -> Self {
+        Self {
+            keyboard: Keyboard::new(scancode_set, layout, HandleControl::Ignore),
+            escape_parser: Default::default(),
+        }
+    }
+
+    fn add_byte(&mut self, byte: u8) {
+        // Reference for escape sequence parsing
+        // https://vt100.net/annarbor/aaa-ug/section13.html
+
+        match self.escape_parser {
+            EscapeParser::Start => {
+                if byte == b'\x1b' {
+                    self.escape_parser = EscapeParser::Escape;
+                }
+            }
+            EscapeParser::Escape => {
+                match byte {
+                    b'[' => self.escape_parser = EscapeParser::Control,
+                    _ => todo!(),
+                }
+                if byte == b'[' {
+                    self.escape_parser = EscapeParser::Control;
+                }
+            }
+            EscapeParser::Control => todo!(),
+        }
+    }
+}
+
+pub async fn use_keypresses() { process_keypresses(use_key).await }
+
+fn use_key(key: DecodedKey) {
+    // static
 }
