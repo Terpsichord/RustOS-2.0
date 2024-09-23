@@ -1,12 +1,9 @@
-use crate::{
-    gdt, memory,
-    memory::{active_level_4_table, Manager},
-    user,
-};
 use alloc::vec::Vec;
 use core::arch::asm;
+
 use x86_64::{
     instructions::{interrupts, tlb},
+    PhysAddr,
     registers::{
         control::{Cr3, Cr3Flags, Efer, EferFlags},
         model_specific::Star,
@@ -15,10 +12,16 @@ use x86_64::{
     },
     structures::paging::{
         mapper::{MappedFrame, TranslateResult::Mapped},
-        page_table::PageTableEntry,
-        Page, PageTable, PageTableFlags, PhysFrame,
-    },
-    PhysAddr, VirtAddr,
+        Page,
+        page_table::PageTableEntry, PageTable, PageTableFlags, PhysFrame,
+    }, VirtAddr,
+};
+use x86_64::structures::paging::OffsetPageTable;
+
+use crate::{
+    gdt, memory,
+    memory::{active_level_4_table, Manager},
+    user,
 };
 
 const USER_PROGRAM_BASE: u64 = 0x40_0000;
@@ -245,3 +248,15 @@ fn page_table_phys(pt: &PageTable) -> PhysAddr {
 //         ")
 //     };
 // }
+
+
+// Jump to usermode based on the Process::exec function in MOROS (https://github.com/vinc/moros/blob/trunk/src/sys/process.rs#L426)
+pub fn moros_jump_user_mode() {
+    let page_table = {
+        // sys::process::page_table:
+        let mut level_4_table = unsafe { memory::manager().active_level_4_table() };
+        let phys_mem_offset = memory::manager().offset_page_table.phys_offset();
+        let mapper = unsafe { OffsetPageTable::new(&mut level_4_table, phys_mem_offset) };
+        // let frame_allocator
+    }
+}
