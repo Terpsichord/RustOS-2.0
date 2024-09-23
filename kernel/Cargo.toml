@@ -26,3 +26,4 @@ hashbrown = "0.14.0"
 tinypci = { path = "../tinypci" }
 anyhow = { version = "1.0.75", default-features = false, features = [] }
 cmos-rtc = "0.1.2"
+vte = { version = "0.13.0", features = ["ansi"] }

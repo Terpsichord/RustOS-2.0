@@ -8,6 +8,7 @@ use x86_64::{
 /// A `FrameAllocator` that returns usable frames from the bootloader's memory
 /// map.
 #[allow(clippy::module_name_repetitions)]
+#[derive(Clone)]
 pub struct PageFrameAllocator {
     memory_regions: &'static MemoryRegions,
     next: usize,

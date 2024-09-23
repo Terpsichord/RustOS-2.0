@@ -11,6 +11,7 @@ use pc_keyboard::{
     ScancodeSet1,
 };
 use spin::Lazy;
+use vte::ansi;
 
 static SCANCODE_QUEUE: Lazy<ArrayQueue<u8>> = Lazy::new(|| ArrayQueue::new(100));
 static WAKER: AtomicWaker = AtomicWaker::new();
@@ -75,51 +76,63 @@ pub async fn process_keypresses(mut process_key: impl FnMut(DecodedKey)) {
 /// A (not-yet) ANSI-compatible terminal
 struct Terminal<S: ScancodeSet, L: KeyboardLayout> {
     keyboard: Keyboard<L, S>,
-    escape_parser: EscapeParser,
+    // escape_parser: EscapeParser,
 }
 
-#[derive(Default)]
-enum EscapeParser {
-    #[default]
-    Start,
-    Escape,
-    Control,
+struct Handler {
+    color: Option<ansi::Rgb>,
 }
 
-impl<S: ScancodeSet, L: KeyboardLayout> Terminal<S, L> {
-    fn new(scancode_set: S, layout: L) -> Self {
-        Self {
-            keyboard: Keyboard::new(scancode_set, layout, HandleControl::Ignore),
-            escape_parser: Default::default(),
-        }
-    }
-
-    fn add_byte(&mut self, byte: u8) {
-        // Reference for escape sequence parsing
-        // https://vt100.net/annarbor/aaa-ug/section13.html
-
-        match self.escape_parser {
-            EscapeParser::Start => {
-                if byte == b'\x1b' {
-                    self.escape_parser = EscapeParser::Escape;
-                }
-            }
-            EscapeParser::Escape => {
-                match byte {
-                    b'[' => self.escape_parser = EscapeParser::Control,
-                    _ => todo!(),
-                }
-                if byte == b'[' {
-                    self.escape_parser = EscapeParser::Control;
-                }
-            }
-            EscapeParser::Control => todo!(),
-        }
-    }
+// https://github.com/alacritty/vte/blob/master/src/ansi.rs#L1990
+impl ansi::Handler for Handler {
+    fn set_color(&mut self, _: usize, color: ansi::Rgb) { self.color = Some(color); }
 }
-
-pub async fn use_keypresses() { process_keypresses(use_key).await }
-
-fn use_key(key: DecodedKey) {
-    // static
-}
+// #[derive(Default)]
+// enum EscapeParser {
+//     #[default]
+//     Ground,
+//     Escape,
+//     EscapeIntermediate,
+//     CsiEntry,
+//     CsiParam,
+//     CsiIntermediate,
+//     CsiIgnore,
+// }
+//
+// impl<S: ScancodeSet, L: KeyboardLayout> Terminal<S, L> {
+//     fn new(scancode_set: S, layout: L) -> Self {
+//         Self {
+//             keyboard: Keyboard::new(scancode_set, layout,
+// HandleControl::Ignore),             escape_parser: Default::default(),
+//         }
+//     }
+//
+//     fn add_byte(&mut self, byte: u8) {
+//         // Reference for escape sequence parsing
+//         // https://vt100.net/annarbor/aaa-ug/section13.html
+//
+//         match self.escape_parser {
+//             EscapeParser::Start => {
+//                 if byte == b'\x1b' {
+//                     self.escape_parser = EscapeParser::Escape;
+//                 }
+//             }
+//             EscapeParser::Escape => {
+//                 match byte {
+//                     b'[' => self.escape_parser = EscapeParser::Control,
+//                     _ => todo!(),
+//                 }
+//                 if byte == b'[' {
+//                     self.escape_parser = EscapeParser::Control;
+//                 }
+//             }
+//             EscapeParser::Control => todo!(),
+//         }
+//     }
+// }
+//
+// pub async fn use_keypresses() { process_keypresses(use_key).await }
+//
+// fn use_key(key: DecodedKey) {
+//     // static
+// }
