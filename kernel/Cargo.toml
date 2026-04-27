@@ -10,7 +10,7 @@ bootloader_api = "0.11.4"
 bootloader-x86_64-common = "0.11.4"
 conquer-once = { version = "0.4.0", default-features = false }
 noto-sans-mono-bitmap = "0.2.0"
-spin = "0.9.8"
+spin = "0.10.0"
 x86_64 = "0.14.10"
 uart_16550 = "0.3.0"
 log = { version = "0.4.20", default-features = false }
