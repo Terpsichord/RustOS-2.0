@@ -21,7 +21,7 @@ embedded-graphics = "0.8.1"
 tinybmp = "0.5.0"
 crossbeam-queue = { version = "0.3.8", default-features = false, features = ["alloc"] }
 futures-core = { version = "0.3.28", default-features = false, features = ["alloc"] }
-futures-util = { version = "0.3.28", default-features = false, features = ["alloc"] }
+futures-util = { version = "0.3.32", default-features = false, features = ["alloc"] }
 hashbrown = "0.14.0"
 tinypci = { path = "../tinypci" }
 anyhow = { version = "1.0.75", default-features = false, features = [] }
