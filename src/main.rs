@@ -10,6 +10,9 @@ fn main() {
     qemu_cmd.args([
         "-drive", &format!("format=raw,file={uefi_path}"),
         "-serial", "stdio",
+        "-drive", "format=raw,file=harddisk.img,id=harddisk,if=none",
+        "-device", "ahci,id=ahci",
+        "-device", "ide-hd,bus=ahci.0,drive=harddisk",
         // "-d", "cpu_reset",
     ]);
 
