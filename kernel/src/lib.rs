@@ -29,6 +29,7 @@ mod gdt;
 mod idt;
 mod mem;
 mod serial;
+pub mod smp;
 pub mod task;
 mod writer;
 
