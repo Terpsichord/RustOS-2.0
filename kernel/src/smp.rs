@@ -124,6 +124,31 @@ unsafe fn start_ap(apic_id: u32) {
                 hlt_loop();
             }),
         );
+//         let mut manager = crate::mem::MANAGER.try_get().unwrap().lock();
+//         let region: &MemoryRegion = manager
+//             .frame_allocator
+//             .memory_regions
+//             .iter()
+//             .find(|region| region.start <= TRAMPOLINE_BASE && TRAMPOLINE_BASE <= region.end)
+//             .unwrap();
+//         println!("{:?}", region);
+//         manager.create_mapping_with_page(
+//             PhysFrame::containing_address(PhysAddr::new(TRAMPOLINE_BASE)),
+//             Page::containing_address(VirtAddr::new(TRAMPOLINE_BASE)),
+//         );
+//         // manager.frame_allocator.memory_regions
+//         // let offset = manager.offset_page_table.phys_offset().as_u64();
+//
+//         ptr::copy_nonoverlapping(
+//             _ap_trampoline as *const u8,
+//             TRAMPOLINE_BASE as *const u8,
+//             4096,
+//         );
+//         println!(
+//             "ap_start deref: {:#06x}\n0x78000: {:#06x}",
+//             *(ap_start as *const u64),
+//             *(TRAMPOLINE_BASE as *const u64),
+//         );
         serial_println!("sending init ipi to APIC{apic_id}");
         lapic.send_init_ipi(apic_id);
         serial_println!("sending sipi");
